@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> GK AI </title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@300;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050810;
+            --accent: #ff2d55;
+            /* Medical Red */
+            --accent-glow: rgba(255, 45, 85, 0.4);
+            --danger: #ff2d55;
+            --warning: #ffb300;
+            --success: #00ffa3;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-glow: 0 0 15px rgba(255, 45, 85, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 85, 0.05) 0%, transparent 40%);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            padding: 2.5rem 1rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 10;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 0.5rem;
+        }
+
+        .heart-logo {
+            width: 50px;
+            height: 50px;
+            filter: drop-shadow(0 0 10px var(--accent));
+            animation: heartBeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartBeat {
+            0% {
+                transform: scale(1);
+            }
+
+            15% {
+                transform: scale(1.15);
+            }
+
+            30% {
+                transform: scale(1);
+            }
+
+            45% {
+                transform: scale(1.2);
+            }
+
+            70% {
+                transform: scale(1);
+            }
+        }
+
+        .logo-text {
+            font-family: "aerial", sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #5edef2, var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            /* Fixed lint suggestion */
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 95%;
+            margin: 3rem auto;
+            position: relative;
+        }
+
+        .main-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .upload-zone {
+            position: relative;
+            border: 2px dashed var(--glass-border);
+            border-radius: 24px;
+            padding: 4rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background: rgba(0, 229, 255, 0.03);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px -10px var(--accent-glow);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        #image-preview {
+            display: none;
+            max-width: 100%;
+            height: 400px;
+            object-fit: contain;
+            border-radius: 16px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Scanning Animation */
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 0%, var(--accent) 50%, transparent 100%);
+            background-size: 100% 200px;
+            opacity: 0;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% {
+                top: -100px;
+                opacity: 0.5;
+            }
+
+            100% {
+                top: 100%;
+                opacity: 0.5;
+            }
+        }
+
+        .scanning .scan-overlay {
+            display: block;
+            animation: scan 2s linear infinite;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent) 0%, #00b8d4 100%);
+            color: #050810;
+            border: none;
+            padding: 1.25rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 2rem;
+            font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .btn-action:hover:not(:disabled) {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+            box-shadow: 0 8px 25px var(--accent-glow);
+        }
+
+        .btn-action:disabled {
+            background: #2a2a2a;
+            color: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #result-display {
+            display: none;
+            margin-top: 3rem;
+            padding: 2.5rem;
+            border-radius: 24px;
+            animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .risk-badge {
+            padding: 0.5rem 1.5rem;
+            border-radius: 99px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 1.5rem auto;
+            border: 8px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .low-risk {
+            background: rgba(0, 255, 163, 0.1);
+            border: 1px solid var(--success);
+        }
+
+        .low-risk .risk-badge {
+            background: var(--success);
+            color: #000;
+        }
+
+        .low-risk .score-circle {
+            color: var(--success);
+            border-top-color: var(--success);
+        }
+
+        .medium-risk {
+            background: rgba(255, 179, 0, 0.1);
+            border: 1px solid var(--warning);
+        }
+
+        .medium-risk .risk-badge {
+            background: var(--warning);
+            color: #000;
+        }
+
+        .medium-risk .score-circle {
+            color: var(--warning);
+            border-top-color: var(--warning);
+        }
+
+        .high-risk {
+            background: rgba(255, 45, 85, 0.1);
+            border: 1px solid var(--danger);
+        }
+
+        .high-risk .risk-badge {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .high-risk .score-circle {
+            color: var(--danger);
+            border-top-color: var(--danger);
+        }
+
+        .loader-dots {
+            display: none;
+            justify-content: center;
+            gap: 8px;
+            margin: 2rem 0;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: dotWave 1.2s infinite ease-in-out;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes dotWave {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+                opacity: 0.3;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .ai-pulse {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* History Styles */
+        .history-section {
+            margin-top: 4rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .history-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .history-table th {
+            text-align: left;
+            padding: 1rem;
+            opacity: 0.5;
+            font-weight: 500;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .history-table td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .badge-small {
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-low {
+            background: rgba(0, 255, 163, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .badge-medium {
+            background: rgba(255, 179, 0, 0.1);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .badge-high {
+            background: rgba(255, 45, 85, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Collapsible logic */
+        .history-content {
+            display: none;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }
+
+        .history-section.expanded .history-content {
+            display: block;
+        }
+
+        .toggle-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Outfit', sans-serif;
+            margin-left: auto;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent);
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="heart_icon_futuristic.png" class="heart-logo" alt="Heart Icon">
+            <h1 class="logo-text">RETINA AI</h1>
+        </div>
+        <p style="opacity: 0.6; margin-top: 0.5rem; letter-spacing: 1px; font-weight: 300;">NEXT-GEN CARDIO AI</p>
+    </header>
+
+    <div class="container">
+        <div class="main-card">
+            <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                <div id="upload-prompt">
+                    <span class="upload-icon">👁️</span>
+                    <h2 style="font-weight: 600; margin-bottom: 0.5rem;">Upload Retina Image</h2>
+                    <p style="opacity: 0.5;">Drag & drop a retinal image or click to browse</p>
+                </div>
+                <div id="image-container" style="position: relative; display: inline-block;">
+                    <img id="image-preview" alt="Scan Preview">
+                    <div class="scan-overlay"></div>
+                </div>
+                <input type="file" id="file-input" hidden accept="image/*" onchange="processFile(event)">
+            </div>
+
+            <button class="btn-action" id="analyze-btn" disabled onclick="startAnalysis()">
+                Initialize AI Analysis
+            </button>
+
+            <div class="loader-dots" id="loader">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+
+            <div id="result-display">
+                <div class="result-header">
+                    <h3 style="margin: 0; font-size: 1.5rem;">Prediction Report</h3>
+                    <span id="risk-badge" class="risk-badge">Low Risk</span>
+                </div>
+                <div class="score-circle" id="risk-score">0%</div>
+                <p id="risk-description"
+                    style="line-height: 1.6; opacity: 0.8; font-size: 1.1rem; max-width: 500px; margin: 0 auto;"></p>
+
+                <div
+                    style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; opacity: 0.4;">
+                    SYSTEM STATUS: AI MODEL LOADED | CORE: SVM-HOG | DATABASE: CONVEX CLOUD
+                </div>
+            </div>
+        </div>
+
+        <div class="history-section" id="history-section">
+            <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                <h2
+                    style="font-family: 'Space Grotesk', sans-serif; margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.5rem;">🕒</span> RECENT PREDICTION HISTORY
+                </h2>
+                <button class="toggle-btn" onclick="toggleHistory()">
+                    <span id="toggle-text">Show History</span>
+                    <span class="toggle-icon">▼</span>
+                </button>
+            </div>
+            <div class="history-content" id="history-content">
+                <div class="history-card">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>TIMESTAMP</th>
+                                <th>SOURCE</th>
+                                <th>RISK SCORE</th>
+                                <th>RESULT</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-body">
+                            <!-- History items will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ai-pulse"></div>
+
+    <script>
+        let imageData = "";
+
+        function processFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const preview = document.getElementById('image-preview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    document.getElementById('upload-prompt').style.display = 'none';
+                    document.getElementById('analyze-btn').disabled = false;
+
+                    imageData = e.target.result.split(',')[1];
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function startAnalysis() {
+            const btn = document.getElementById('analyze-btn');
+            const loader = document.getElementById('loader');
+            const resultBox = document.getElementById('result-display');
+            const zone = document.getElementById('drop-zone');
+
+            btn.disabled = true;
+            loader.style.display = 'flex';
+            resultBox.style.display = 'none';
+            zone.classList.add('scanning');
+
+            try {
+                const response = await fetch('http://localhost:8000/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ base64_data: imageData })
+                });
+
+                const data = await response.json();
+
+                // Add tiny delay for "cool factor"
+                setTimeout(() => {
+                    zone.classList.remove('scanning');
+                    loader.style.display = 'none';
+                    resultBox.style.display = 'block';
+
+                    const score = Math.round(data.risk_score * 100);
+                    document.getElementById('risk-score').innerText = score + "%";
+                    document.getElementById('risk-badge').innerText = data.result;
+
+                    const desc = document.getElementById('risk-description');
+
+                    if (data.result === "High Risk") {
+                        resultBox.className = 'high-risk';
+                        desc.innerText = "CRITICAL: Severe microvascular abnormalities detected. Immediate cardiovascular consultation recommended.";
+                    } else if (data.result === "Medium Risk") {
+                        resultBox.className = 'medium-risk';
+                        desc.innerText = "MODERATE: Early-stage vascular signs detected. Annual retinal screening and blood pressure monitoring suggested.";
+                    } else {
+                        resultBox.className = 'low-risk';
+                        desc.innerText = "OPTIMAL: Retinal vasculature appears resilient. No detectable markers of advanced cardiovascular distress.";
+                    }
+
+                    btn.disabled = false;
+                    btn.innerText = "New Prediction Scan";
+
+                    // Refresh history after prediction
+                    fetchHistory();
+                }, 1500);
+
+            } catch (error) {
+                alert("AI Engine is offline! Ensure main.py is running on port 8000.");
+                loader.style.display = 'none';
+                zone.classList.remove('scanning');
+                btn.disabled = false;
+            }
+        }
+
+        async function fetchHistory() {
+            try {
+                const response = await fetch('http://localhost:8000/history');
+                const data = await response.json();
+                const container = document.getElementById('history-body');
+                container.innerHTML = "";
+
+                data.history.forEach(item => {
+                    const date = new Date(item.timestamp).toLocaleString();
+                    const badgeClass = item.result === "High Risk" ? "badge-high" :
+                        item.result === "Medium Risk" ? "badge-medium" : "badge-low";
+
+                    const row = `
+                        <tr>
+                            <td style="font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; opacity: 0.7;">${date}</td>
+                            <td style="font-size: 0.9rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.imageUrl}</td>
+                            <td style="font-weight: 700;">${Math.round(item.riskScore * 100)}%</td>
+                            <td><span class="badge-small ${badgeClass}">${item.result}</span></td>
+                        </tr>
+                    `;
+                    container.innerHTML += row;
+                });
+            } catch (error) {
+                console.error("Failed to fetch history:", error);
+            }
+        }
+
+        function toggleHistory() {
+            const section = document.getElementById('history-section');
+            const text = document.getElementById('toggle-text');
+            const isExpanded = section.classList.toggle('expanded');
+
+            text.innerText = isExpanded ? "Hide History" : "Show History";
+
+            if (isExpanded) {
+                fetchHistory(); // Refresh when opening
+            }
+        }
+
+        // Initialize history on load
+        window.onload = fetchHistory;
+    </script>
+</body>
+
+</html>
