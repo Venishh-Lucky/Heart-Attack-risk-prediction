@@ -7,3 +7,6 @@ requests
 python-multipart
 python-dotenv
 convex
+scikit-learn
+joblib
+opencv-python-headless
