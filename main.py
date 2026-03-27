@@ -18,7 +18,11 @@ import joblib
 load_dotenv(".env.local")
 
 CONVEX_URL = os.getenv("CONVEX_URL")
-client = ConvexClient(CONVEX_URL)
+if CONVEX_URL:
+    client = ConvexClient(CONVEX_URL)
+else:
+    client = None
+    print("Warning: CONVEX_URL not set in environment. Database connection disabled.")
 
 # Load the trained Lite model
 MODEL_PATH = "heart_model_lite.pkl"
@@ -103,12 +107,13 @@ async def predict_risk(image_input: ImageInput):
 
         # 4. Storage in Convex
         try:
-            client.mutation("predictions:savePrediction", {
-                "imageUrl": source,
-                "riskScore": risk_score,
-                "result": result,
-                "timestamp": int(time.time() * 1000)
-            })
+            if client:
+                client.mutation("predictions:savePrediction", {
+                    "imageUrl": source,
+                    "riskScore": risk_score,
+                    "result": result,
+                    "timestamp": int(time.time() * 1000)
+                })
         except Exception as db_error:
             print(f"Database error: {db_error}")
             # We continue even if DB fails to return the result to user
@@ -126,6 +131,8 @@ async def predict_risk(image_input: ImageInput):
 @app.get("/history")
 async def get_history():
     try:
+        if not client:
+            return {"history": [], "warning": "Database not configured"}
         history = client.query("predictions:getHistory")
         return {"history": history}
     except Exception as e:
@@ -133,4 +140,5 @@ async def get_history():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
