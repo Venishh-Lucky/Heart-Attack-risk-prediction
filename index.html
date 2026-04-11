@@ -559,7 +559,7 @@
                 <input type="password" id="password-input" placeholder="••••••••">
             </div>
             
-            <button class="btn-action" onclick="performLogin()" style="margin-top: 1rem;">
+            <button id="login-btn" class="btn-action" onclick="performLogin()" style="margin-top: 1rem;">
                 Authenticate
             </button>
             <p id="login-error" style="color: var(--danger); text-align: center; margin-top: 1rem; display: none; font-size: 0.9rem;">Invalid credentials</p>
@@ -568,6 +568,12 @@
 
     <div id="app-screen" style="display: none;">
         <header>
+        <div style="position: absolute; top: 1rem; right: 1rem;">
+            <button class="toggle-btn" onclick="logout()" style="padding: 0.5rem 1rem; border-radius: 8px;">
+                <span>Logout</span>
+                <span style="font-size: 1.1rem;">🚪</span>
+            </button>
+        </div>
         <div class="logo-container">
             <img src="heart_icon_futuristic.png" class="heart-logo" alt="Heart Icon">
             <h1 class="logo-text">RETINA AI</h1>
@@ -692,18 +698,52 @@
     <script>
         let imageData = "";
 
-        function performLogin() {
+        async function performLogin() {
             const email = document.getElementById('email-input').value;
             const password = document.getElementById('password-input').value;
+            const errorMsg = document.getElementById('login-error');
+            const loginBtn = document.getElementById('login-btn');
             
-            if (email && password) {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('app-screen').style.display = 'block';
-                fetchHistory(); // Fetch history once logged in
-            } else {
-                document.getElementById('login-error').style.display = 'block';
-                document.getElementById('login-error').innerText = "Please enter both email and password.";
+            if (!email || !password) {
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = "Please enter both email and password.";
+                return;
             }
+
+            loginBtn.disabled = true;
+            loginBtn.innerText = "Authenticating...";
+            errorMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('http://localhost:8000/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                if (response.ok) {
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('app-screen').style.display = 'block';
+                    fetchHistory();
+                } else {
+                    const data = await response.json();
+                    errorMsg.style.display = 'block';
+                    errorMsg.innerText = data.detail || "Invalid credentials";
+                }
+            } catch (error) {
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = "Server is offline. Start main.py first.";
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerText = "Authenticate";
+            }
+        }
+
+        function logout() {
+            document.getElementById('email-input').value = "";
+            document.getElementById('password-input').value = "";
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('app-screen').style.display = 'none';
         }
 
         function processFile(event) {

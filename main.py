@@ -56,9 +56,21 @@ class ImageInput(BaseModel):
     image_url: str = None
     base64_data: str = None
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
 @app.get("/")
 def read_root():
     return {"message": "Heart Attack Risk Prediction API is running"}
+
+@app.post("/login")
+async def login(request: LoginRequest):
+    # Static credentials for demonstration
+    if request.email == "hospital@gmail.com" and request.password == "xyzxyz":
+        return {"status": "success", "message": "Login successful"}
+    else:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
 
 @app.post("/predict")
 async def predict_risk(image_input: ImageInput):
